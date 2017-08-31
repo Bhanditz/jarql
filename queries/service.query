@@ -1,0 +1,139 @@
+prefix cpsv: <http://purl.org/vocab/cpsv#>
+prefix cv: <http://data.europa.eu/m8g/>
+prefix dcat: <http://www.w3.org/ns/dcat#>
+prefix dct: <http://purl.org/dc/terms/>
+prefix jarql: <http://jarql.com/>
+prefix skos: <http://www.w3.org/2004/02/skos/core#>
+prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+
+CONSTRUCT {
+    ?URIService a cpsv:PublicService;
+        dct:type ?serviceuri;
+        dct:title ?servicenamevalue;
+        dct:description ?descriptionvalue;
+        cv:hasCriterion ?URICriterion;
+        cv:sector ?URISector;
+        dct:language ?languages;
+        cv:isGroupedBy ?URILifeEvent;
+        dcat:keyword ?keywordvalue;
+        cv:hasCompetentAuthority ?URIPublicOrganisation;
+        cv:serviceProvider ?URIAgent;
+        cv:hasFormalFramework ?URIFormalFramework;
+        cv:hasChannel ?URIChannel;
+        cv:hasCost ?URICost;
+        dct:spatial ?URIServiceSpatial.
+
+    ?URICriterion a cv:CriterionRequirement;
+        dct:title ?requirementvalue.
+
+    ?URILifeEvent a cv:LifeEvent;
+        dct:title ?lifeevents.
+
+    ?URIPublicOrganisation a cv:PublicOrganisation;
+        skos:prefLabel ?organizationname.
+
+    ?URIAgent a dct:Agent;
+        dct:title ?organizationname2.
+
+    ?URIFormalFramework a cpsv:FormalFramework;
+        dct:title ?legislationname.
+
+    ?URIChannel a cv:Channel;
+        dct:type ?servicechannelname.
+
+    ?URICost a cv:Cost;
+        dct:description ?costtype.
+
+    ?URISector a skos:Concept;
+        skos:prefLabel ?industrialclasses.
+
+}
+WHERE {
+    jarql:root jarql:id ?id.
+    BIND(URI(CONCAT("https://api.palvelutietovaranto.suomi.fi/api/v6/Service/", ?id)) as ?URIService).
+
+    OPTIONAL {jarql:root jarql:fundingType ?costtype.
+              BIND(URI(CONCAT("https://api.palvelutietovaranto.suomi.fi/api/v6/Cost/", ?costtype)) as ?URICost).
+    }.
+
+    OPTIONAL {jarql:root jarql:areas ?areas.
+              ?areas jarql:municipalities ?municipalities.
+              ?municipalities jarql:code ?municipalitiescode.
+              BIND(URI(CONCAT("https://api.palvelutietovaranto.suomi.fi/api/v6/Spatial/", ?municipalitiescode)) as ?URIServiceSpatial).
+    }.
+
+    OPTIONAL {jarql:root jarql:serviceClasses ?serviceclasses.
+              ?serviceclasses jarql:uri ?serviceuritype.
+              BIND(URI(?serviceuritype) AS ?serviceuri).
+    }.
+
+    jarql:root jarql:serviceNames ?servicenames.
+    ?servicenames jarql:value ?servicenamevalue.
+    ?servicenames jarql:type ?servicenametype.
+    FILTER (?servicenametype="Name"^^xsd:string).
+
+    OPTIONAL {jarql:root jarql:serviceDescriptions ?servicedescriptions.
+              ?servicedescriptions jarql:value ?descriptionvalue.
+              ?servicedescriptions jarql:type ?descriptiontypes.
+              FILTER (?descriptiontypes="Description"^^xsd:string).
+    }.
+
+    OPTIONAL {jarql:root jarql:requirements ?servicerequirements.
+              ?servicerequirements jarql:value ?requirementvalue.
+              FILTER(STRLEN(?requirementvalue)!=0).
+              BIND(URI(CONCAT("https://api.palvelutietovaranto.suomi.fi/api/v6/Criterion/", MD5(?requirementvalue))) as ?URICriterion).
+    }.
+
+    OPTIONAL {jarql:root jarql:industrialClasses ?industrialclasses.
+              BIND(URI(CONCAT("https://api.palvelutietovaranto.suomi.fi/api/v6/Sector/", MD5(?industrialclasses))) as ?URISector).
+    }.
+
+    OPTIONAL {jarql:root jarql:languages ?languages.}.
+
+    OPTIONAL {jarql:root jarql:lifeEvents ?lifeevents.
+              BIND(URI(CONCAT("https://api.palvelutietovaranto.suomi.fi/api/v6/LifeEvent/", MD5(?lifeevents))) as ?URILifeEvent).
+    }.
+
+    OPTIONAL {jarql:root jarql:keywords ?keywords.
+              ?keywords jarql:value ?keywordvalue.
+    }.
+
+    jarql:root jarql:organizations ?organizations.
+    ?organizations jarql:roleType ?organizationrole.
+    FILTER (?organizationrole="Responsible"^^xsd:string).
+    ?organizations jarql:organization ?organizationstructure.
+    ?organizationstructure jarql:id ?organizationid.
+    ?organizationstructure jarql:name ?organizationname.
+    BIND(URI(CONCAT("https://api.palvelutietovaranto.suomi.fi/api/v6/PublicOrganisation/", ?organizationid)) as ?URIPublicOrganisation).
+
+    OPTIONAL {jarql:root jarql:organizations ?organizations2.
+              ?organizations2 jarql:roleType ?organizationrole2.
+              FILTER (?organizationrole2!="Responsible"^^xsd:string).
+              ?organizations2 jarql:organization ?organizationstructure2.
+              ?organizationstructure2 jarql:name ?organizationname2.
+              ?organizationstructure2 jarql:id ?organizationid2.
+              BIND(URI(CONCAT("https://api.palvelutietovaranto.suomi.fi/api/v6/Agent/", ?organizationid2)) as ?URIAgent).
+    }.
+
+    OPTIONAL {jarql:root jarql:organizations ?organizations2.
+              ?organizations2 jarql:roleType ?organizationrole2.
+              FILTER (?organizationrole2!="Responsible"^^xsd:string).
+              ?organizations2 jarql:additionalInformation ?additionalinformation.
+              ?additionalinformation jarql:value ?organizationname2.
+              BIND(URI(CONCAT("https://api.palvelutietovaranto.suomi.fi/api/v6/Agent/", MD5(?organizationname2))) as ?URIAgent).
+    }.
+
+    OPTIONAL {jarql:root jarql:legislation ?legislation.
+              ?legislation jarql:names ?names.
+              ?names jarql:value ?legislationname.
+              BIND(URI(CONCAT("https://api.palvelutietovaranto.suomi.fi/api/v6/FormalFramework/", MD5(?legislationname))) as ?URIFormalFramework).
+    }.
+
+    OPTIONAL {jarql:root jarql:serviceChannels ?servicechannels.
+              ?servicechannels jarql:serviceChannel ?servicechannel.
+              ?servicechannel jarql:id ?servicechannelid.
+              ?servicechannel jarql:name ?servicechannelname.
+              BIND(URI(CONCAT("https://api.palvelutietovaranto.suomi.fi/api/v6/Channel/", ?servicechannelid)) as ?URIChannel).
+    }.
+
+}
