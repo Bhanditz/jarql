@@ -71,7 +71,7 @@ CONSTRUCT {
             dct:type ?servicechannelname.
 
         ?URICriterion a cv:CriterionRequirement;
-            dct:title ?criteriontitle.
+            dct:title ?servicerequirements.
 
         ?URICost a cv:Cost;
             dct:description ?costtype.
@@ -185,8 +185,7 @@ WHERE {
 
    OPTIONAL {?procedure jarql:conditions ?servicerequirements.
               FILTER(STRLEN(?servicerequirements)!=0).
-              BIND(REPLACE(REPLACE(?servicerequirements,"<div>",""),"</div>","") as ?criteriontitle).
-              BIND(URI(CONCAT("https://api.palvelutietovaranto.suomi.fi/api/v6/Criterion/", MD5(?criteriontitle))) as ?URICriterion).
+              BIND(URI(CONCAT("https://api.palvelutietovaranto.suomi.fi/api/v6/Criterion/", MD5(?servicerequirements))) as ?URICriterion).
     }.
 
     OPTIONAL {?procedure jarql:price ?costtype.
