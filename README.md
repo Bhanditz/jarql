@@ -15,7 +15,7 @@ In order to create an executable .jar containing all the dependencies just run:
 
 ## Usage
 
-    java -jar jarql-<version>.jar <JSON-File> <Query-File>
+    java -jar jarql-<version>.jar [XML|JSON] <JSON-File> <Query-File>
 
 For example if you have a file called `paperino.json` with the following content:
 
