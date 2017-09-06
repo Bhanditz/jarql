@@ -49,6 +49,7 @@ import org.apache.clerezza.commons.rdf.impl.utils.TripleImpl;
 import org.apache.clerezza.commons.rdf.impl.utils.TypedLiteralImpl;
 import org.apache.clerezza.rdf.ontologies.RDF;
 import org.apache.clerezza.rdf.ontologies.XSD;
+import org.jsoup.Jsoup;
 
 /**
  *
@@ -62,7 +63,7 @@ public class JarqlParser {
 
 
 
-    static void parse(final InputStream in, final OutputStream out) {
+    static void parse(final InputStream in, final OutputStream out, boolean encode) {
         final PrintWriter printWriter;
         try {
             printWriter = new PrintWriter(new OutputStreamWriter(out, "utf-8"), true);
@@ -118,24 +119,24 @@ public class JarqlParser {
                     return toNT((BlankNode) node);
                 }
             }
-        });
+        }, encode);
     }
 
-    static void parse(final InputStream in, final Graph graph) {
+    static void parse(final InputStream in, final Graph graph, boolean encode) {
         parse(in, new TripleSink() {
             @Override
             public void add(Triple triple) {
                 graph.add(triple);
             }
 
-        });
+        }, encode);
     }
 
-    static void parse(InputStream in, TripleSink sink) {
+    static void parse(InputStream in, TripleSink sink, boolean encode) {
         final JsonParserFactory factory = Json.createParserFactory(null);
         final JsonParser jsonParser = factory.createParser(in, Charset.forName("utf-8"));
         JarqlParser jsonLdParser = new JarqlParser(jsonParser, sink);
-        jsonLdParser.parse();
+        jsonLdParser.parse(encode);
     }
 
     private final JsonParser jsonParser;
@@ -147,15 +148,15 @@ public class JarqlParser {
         this.sink = sink;
     }
 
-    private void parse() {
+    private void parse(boolean encoded) {
         final Event firstEvent = jsonParser.next();
         switch (firstEvent) {
             case START_OBJECT: {
-                parseRootJsonObject();
+                parseRootJsonObject(encoded);
                 break;
             }
             case START_ARRAY: {
-                parseRootJsonArray();
+                parseRootJsonArray(encoded);
                 break;
             }
             default: {
@@ -164,24 +165,24 @@ public class JarqlParser {
         }
     }
 
-    private void parseRootJsonObject() {
-        parseJsonObject(ROOT);
+    private void parseRootJsonObject(boolean encoded) {
+        parseJsonObject(ROOT, encoded);
         sink.add(new TripleImpl(ROOT, RDF.type, ROOT_TYPE));
     }
     
-    private void parseRootJsonArray() {
+    private void parseRootJsonArray(boolean encoded) {
         parseJsonArray(object -> {
             if (object instanceof Literal) {
                 throw new RuntimeException("Elements of root array must not be literal");
             }
             sink.add(new TripleImpl((BlankNodeOrIRI) object, RDF.type, ROOT_TYPE));
-        });
+        }, encoded);
     }
 
     
     
 
-    public void parseJsonObject(BlankNodeOrIRI subject) {
+    public void parseJsonObject(BlankNodeOrIRI subject, boolean encoded) {
         ALLKEYS: while(true) {
             JsonParser.Event event = jsonParser.next();
             if (event == Event.END_OBJECT) {
@@ -197,7 +198,14 @@ public class JarqlParser {
                 case VALUE_STRING: 
                 case VALUE_NUMBER: {
                     final String value = jsonParser.getString();
-                    final Literal literal = new PlainLiteralImpl(value);
+                    String encodedvalue ="";
+                    if(encoded) {
+                    	encodedvalue=Jsoup.parse(value).text();
+                    } else {
+                    	encodedvalue=value;
+                    }
+             
+                    final Literal literal = new PlainLiteralImpl(encodedvalue);
                     sink.add(new TripleImpl(subject, predicate, literal));
                     break;
                 }
@@ -213,13 +221,13 @@ public class JarqlParser {
                 }
                 case START_ARRAY: {
                     //new JsonArrayParser(subject, predicate);
-                    parseJsonArray(object -> sink.add(new TripleImpl(subject, predicate, object)));
+                    parseJsonArray(object -> sink.add(new TripleImpl(subject, predicate, object)), encoded);
                     break;
                 }
                 case START_OBJECT: {
                     final BlankNode object = new BlankNode();
                     sink.add(new TripleImpl(subject, predicate, object));
-                    parseJsonObject(object);
+                    parseJsonObject(object, encoded);
                     break;
                 }
                 case VALUE_NULL: {
@@ -234,7 +242,7 @@ public class JarqlParser {
 
     
     
-    private void parseJsonArray(Consumer<RDFTerm> elementProcessor) {
+    private void parseJsonArray(Consumer<RDFTerm> elementProcessor, boolean encoded) {
         ARRAY: while (true) {
             JsonParser.Event element = jsonParser.next();
             switch (element) {
@@ -250,7 +258,7 @@ public class JarqlParser {
                 case START_OBJECT: {
                     final BlankNode object = new BlankNode();
                     elementProcessor.accept(object);
-                    parseJsonObject(object);
+                    parseJsonObject(object, encoded);
                     break;
                 }
                 case END_ARRAY: {

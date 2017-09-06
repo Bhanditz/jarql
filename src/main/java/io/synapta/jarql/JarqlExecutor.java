@@ -63,26 +63,27 @@ public class JarqlExecutor {
     @SuppressWarnings("resource")
 	public static void main(String[] args) throws IOException {
     	final String fileType = args[0];
-        final String jsonFileName = args[1];
+        final String jsonFileName = args[2];
         final File jsonFile = new File(jsonFileName);
         if (!jsonFile.exists()) {
             System.err.println("File " + jsonFileName + " does not exist");
             System.exit(-1);
         }
         FileInputStream jsonIn = new FileInputStream(jsonFile);
-        final String queryFileName = args[2];
+        final String queryFileName = args[3];
         final File queryFile = new File(queryFileName);
         if (!queryFile.exists()) {
             System.err.println("File " + queryFileName + " does not exist");
             System.exit(-1);
         }
-        String jsonPrettyPrintString="";
-        FileInputStream fin = new FileInputStream(jsonFile);
-        byte[] xmlData = new byte[(int) jsonFile.length()];
-        fin.read(xmlData);
-        fin.close();
-        String TEST_XML_STRING = new String(xmlData, "UTF-8");
+
         if(fileType.equals("xml")){
+            String jsonPrettyPrintString="";
+            FileInputStream fin = new FileInputStream(jsonFile);
+            byte[] xmlData = new byte[(int) jsonFile.length()];
+            fin.read(xmlData);
+            fin.close();
+            String TEST_XML_STRING = new String(xmlData, "UTF-8");
             JSONObject xmlJSONObj = XML.toJSONObject(TEST_XML_STRING);
             jsonPrettyPrintString = xmlJSONObj.toString(4);
             File newTextFile = new File("temp.json");
@@ -90,18 +91,19 @@ public class JarqlExecutor {
             temp.write(jsonPrettyPrintString);
             temp.close();
             jsonIn = new FileInputStream(newTextFile);
-
         }
+        
+        final String encoding = args[1];
         final FileInputStream queryIn = new FileInputStream(queryFile);
         String queryString = new BufferedReader(new InputStreamReader(queryIn)).lines().collect(Collectors.joining("\n"));
-        Graph graph = execute(jsonIn, queryString);
+        Graph graph = execute(jsonIn, queryString, Boolean.parseBoolean(encoding));
         Serializer.getInstance().serialize(System.out, graph, "text/turtle");
     }
     
     
-    static public Graph execute(final InputStream in, final String queryString) {
+    static public Graph execute(final InputStream in, final String queryString, boolean encode) {
         Graph JsonGraph = new SimpleGraph();
-        JarqlParser.parse(in, JsonGraph);
+        JarqlParser.parse(in, JsonGraph, encode);
         JenaGraph jg = new JenaGraph(JsonGraph);
         Model model = ModelFactory.createModelForGraph(jg);
         Query query = QueryFactory.create(queryString);

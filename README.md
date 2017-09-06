@@ -15,7 +15,10 @@ In order to create an executable .jar containing all the dependencies just run:
 
 ## Usage
 
-    java -jar jarql-<version>.jar [XML|JSON] <JSON-File> <Query-File>
+    java -jar jarql-<version>.jar [XML|JSON] [true|false] <JSON-File> <Query-File>
+
+In case the fist parameter is set to XML the application converts the XML to JSON (using org.json library).
+In case the second parameter is set to true the application strips the HTML tags from the strings present in the JSON.
 
 For example if you have a file called `paperino.json` with the following content:
 
@@ -52,7 +55,7 @@ WHERE {
 
 Invoking `jarql-1.0-pre1.jar` as follows:
 
-    java -jar jarql-1.0-pre1.jar paperino.json paperino.query
+    java -jar jarql-1.0-pre1.jar json false paperino.json paperino.query
 
 will output the following RDF:
 

@@ -103,14 +103,14 @@ public class ParserTest {
     static void testFromResource(String fileName, ImmutableGraph expectedJsonGRaph, ImmutableGraph expectedFinalGraph, String queryString ) throws Exception {
         final InputStream inJson = ParserTest.class.getResourceAsStream(fileName);
         final Graph graph = new SimpleGraph();
-        JarqlParser.parse(inJson, graph);
+        JarqlParser.parse(inJson, graph, true);
         final ImmutableGraph result = graph.getImmutableGraph();
         if (expectedJsonGRaph != null) {
             Assert.assertEquals("JsonGraph wrong", expectedJsonGRaph, result);
         }
         if (queryString != null) {
             final InputStream inJsonAgain = ParserTest.class.getResourceAsStream(fileName);
-            Graph executorResultGraph = JarqlExecutor.execute(inJsonAgain, queryString);
+            Graph executorResultGraph = JarqlExecutor.execute(inJsonAgain, queryString, true);
             final ImmutableGraph resultExecutor = executorResultGraph.getImmutableGraph();
             Assert.assertEquals("ResultGraph wrong", expectedFinalGraph, resultExecutor);
         }

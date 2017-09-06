@@ -1,0 +1,166 @@
+prefix adms: <http://www.w3.org/ns/adms#>
+prefix cpsv: <http://purl.org/vocab/cpsv#>
+prefix cv: <http://data.europa.eu/m8g/>
+prefix dcat: <http://www.w3.org/ns/dcat#>
+prefix dct: <http://purl.org/dc/terms/>
+prefix jarql: <http://jarql.com/>
+prefix locn: <http://www.w3.org/ns/locn#>
+prefix schema: <https://schema.org/>
+prefix skos: <http://www.w3.org/2004/02/skos/core#>
+prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+
+CONSTRUCT {
+    ?URIService a cpsv:PublicService;
+        dct:title ?servicetitle;
+        dct:description ?servicedescription4;
+        cv:hasCriterion ?URICriterion;
+        cpsv:follows ?URIRule;
+        cv:hasFormalFramework ?URIFormalFramework;
+        cv:hasContactPoint ?URIContactPoint;
+        cv:hasChannel ?URIChannel;
+        cv:hasCompetentAuthority ?URIPublicOrganisation;
+        cv:hasInput ?URIEvidence;
+        cv:sector ?URISector;
+        cv:isGroupedBy ?URIEvent;
+        adms:status ?status;
+        dct:language ?language.
+
+    ?URICriterion a cv:CriterionRequirement;
+        dct:title ?conditions.
+
+    ?URIRule a cpsv:Rule;
+        dct:title ?ruletitle;
+        dct:description ?ruledescription.
+
+    ?URIFormalFramework a cpsv:FormalFramework;
+        dct:title ?formalframeworkname.
+
+    ?URIContactPoint a schema:ContactPoint;
+        schema:email ?contactpointemail;
+        schema:telephone ?contactpointphone.
+
+    ?URIChannel a cv:Channel.
+
+    ?URIPublicOrganisation a cv:PublicOrganisation;
+        skos:prefLabel ?administrationname.
+
+    ?URIEvidence a cv:Evidence;
+        dct:title ?formtitle;
+        dct:language ?formlanguage.
+
+    ?URISector a skos:Concept;
+        skos:prefLabel ?categorytitle.
+    
+    ?URIEvent a cv:Event;
+        dct:title ?eventtitle.
+}
+WHERE {
+    jarql:root jarql:fiche ?fiche.
+    ?fiche jarql:0 ?fiche0.
+    
+    ?fiche0 jarql:nid ?serviceid.
+    BIND(URI(CONCAT("http://nostra2.wallonie.be/2.0/Service/", ?serviceid)) as ?URIService).
+
+    ?fiche0 jarql:node_title ?servicetitle.
+
+    ?fiche0 jarql:title_user_long ?title_user_long.
+    
+    OPTIONAL {
+        ?fiche0 jarql:points_of_attention ?points.
+        ?points jarql:body ?pointsbody.
+    }.
+    BIND(IF(BOUND(?pointsbody),CONCAT(?title_user_long, ".Points d’attention: ", ?pointsbody),?title_user_long) as ?servicedescription).
+
+    OPTIONAL {
+       ?fiche0 jarql:target_detail ?target.
+    }.
+    BIND(IF(BOUND(?target), CONCAT(?servicedescription, ".Public-cible: ", ?target), ?servicedescription) as ?servicedescription2).
+
+    OPTIONAL {
+       ?fiche0 jarql:advantages ?advantages.
+    }.
+    BIND(IF(BOUND(?advantages), CONCAT(?servicedescription2, ".Avantages: ", ?advantages), ?servicedescription2) as ?servicedescription3).
+
+    OPTIONAL {
+       SELECT (group_concat(?link ; separator = " ") AS ?linksconcat)
+       WHERE { 
+        ?fiche0 jarql:links ?links.
+        ?links jarql:url ?link.
+       }
+    }.
+    BIND(IF(BOUND(?linksconcat), CONCAT(?servicedescription3, ".Links: ", ?linksconcat), ?servicedescription3) as ?servicedescription4).
+
+    OPTIONAL {
+        ?fiche0 jarql:conditions ?conditions.
+        FILTER(STRLEN(?conditions)!=0).
+        BIND(URI(CONCAT("http://nostra2.wallonie.be/2.0/Criterion/", MD5(?conditions))) as ?URICriterion).
+    }.
+
+    OPTIONAL {
+        ?fiche0 jarql:procedure ?ruledescription.
+        FILTER(STRLEN(?ruledescription)!=0).
+        BIND(SUBSTR(?ruledescription,1,25) as ?ruletitle).
+        BIND(URI(CONCAT("http://nostra2.wallonie.be/2.0/Rule/", MD5(?ruledescription))) as ?URIRule).
+    }.
+
+    OPTIONAL {
+        ?fiche0 jarql:legal_references ?legal_references.
+        ?legal_references jarql:id ?formalframeworkid.
+        ?legal_references jarql:name ?formalframeworkname.
+        BIND(URI(CONCAT("http://nostra2.wallonie.be/2.0/FormalFramework/", ?formalframeworkid)) as ?URIFormalFramework).
+    }.
+
+    OPTIONAL {
+        ?fiche0 jarql:stakeholders ?stakeholders.
+        ?stakeholders jarql:id ?contactpointid.
+        ?stakeholders jarql:email ?contactpointemail.
+        ?stakeholders jarql:phone ?contactpointphone.
+        BIND(URI(CONCAT("http://nostra2.wallonie.be/2.0/ContactPoint/", ?contactpointid)) as ?URIContactPoint).
+    }.
+
+    OPTIONAL {
+        ?fiche0 jarql:points_of_contact ?points_of_contact.
+        ?points_of_contact jarql:id ?points_of_contact_id.
+        BIND(URI(CONCAT("http://nostra2.wallonie.be/2.0/Channel/", ?points_of_contact_id)) as ?URIChannel).
+    }.
+
+    OPTIONAL {
+        ?fiche0 jarql:administrations ?administrations.
+        ?administrations jarql:id ?administrationid.
+        ?administrations jarql:name ?administrationname.
+        BIND(URI(CONCAT("http://nostra2.wallonie.be/2.0/PublicOrganisation/", ?administrationid)) as ?URIPublicOrganisation).
+    }.
+
+    OPTIONAL {
+        ?fiche0 jarql:forms ?forms.
+        ?forms jarql:id ?formid.
+        ?forms jarql:title ?formtitle.
+        ?forms jarql:language ?formlanguage.
+        BIND(URI(CONCAT("http://nostra2.wallonie.be/2.0/Evidence/", ?formid)) as ?URIEvidence).
+    }.
+
+    OPTIONAL {
+        ?fiche0 jarql:categories ?categories.
+        ?categories jarql:id ?categoryid.
+        ?categories jarql:title ?categorytitle.
+        BIND(URI(CONCAT("http://nostra2.wallonie.be/2.0/Sector/", ?categoryid)) as ?URISector).
+    }.
+
+    OPTIONAL {
+        ?fiche0 jarql:events ?events.
+        ?events jarql:id ?eventid.
+        ?events jarql:title ?eventtitle.
+        BIND(URI(CONCAT("http://nostra2.wallonie.be/2.0/Event/", ?eventid)) as ?URIEvent).
+    }.
+
+    OPTIONAL {
+        ?fiche0 jarql:when ?status.
+    }.
+    
+    OPTIONAL {
+        ?fiche0 jarql:german_version ?german_version.
+        BIND((IF(?german_version="Oui","http://publications.europa.eu/resource/authority/language/DEU","")) as ?language_german).
+        FILTER(STRLEN(?language_german)!=0).
+        BIND(URI(?language_german) as ?language).
+    }.
+}
