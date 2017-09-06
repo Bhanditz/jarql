@@ -90,145 +90,165 @@ CONSTRUCT {
 WHERE {
     jarql:root jarql:fedict.edrl.domain.Procedure ?procedure.
     ?procedure jarql:contentId ?contentid.
-    BIND(URI(CONCAT("https://cpsv.belgium.be/api/v1/Service/", ?contentid)) as ?URIService).
+    BIND("https://cpsv.belgium.be/api/v1" as ?URIBase).
+    BIND(URI(CONCAT(?URIBase,"/Service/", ?contentid)) as ?URIService).
 
-    OPTIONAL {?procedure jarql:language ?languages.}.
+    OPTIONAL {
+    	?procedure jarql:language ?languages.
+   	}.
 
-    OPTIONAL {?procedure jarql:lifecycle ?status.}.
+    OPTIONAL {
+    	?procedure jarql:lifecycle ?status.
+   	}.
 
-    
     ?procedure jarql:title ?title.
 
-    OPTIONAL {?procedure jarql:formalities ?formalities.
-              FILTER(STRLEN(?formalities)!=0).
+    OPTIONAL {
+    	?procedure jarql:formalities ?formalities.
+        FILTER(STRLEN(?formalities)!=0).
     }.
 
-    OPTIONAL {?procedure jarql:commonSectors ?commonsectors.
-              ?commonsectors jarql:fedict.edrl.domain.Sector ?sector.
-              ?sector jarql:name ?sectorname.
-              BIND(URI(CONCAT("https://cpsv.belgium.be/api/v1/Sector/", MD5(?sectorname))) as ?URICommonSectors).
+    OPTIONAL {
+    	?procedure jarql:commonSectors ?commonsectors.
+        ?commonsectors jarql:fedict.edrl.domain.Sector ?sector.
+        ?sector jarql:name ?sectorname.
+        BIND(URI(CONCAT(?URIBase,"/Sector/", MD5(?sectorname))) as ?URICommonSectors).
     }.
 
-    OPTIONAL {?procedure jarql:commonActivities ?commonactivities.
-              ?commonactivities jarql:fedict.edrl.domain.Activity ?activity.
-              ?activity jarql:name ?activityname.
-              BIND(URI(CONCAT("https://cpsv.belgium.be/api/v1/Sector/", MD5(?activityname))) as ?URICommonActivities).
+    OPTIONAL {
+    	?procedure jarql:commonActivities ?commonactivities.
+        ?commonactivities jarql:fedict.edrl.domain.Activity ?activity.
+        ?activity jarql:name ?activityname.
+        BIND(URI(CONCAT(?URIBase,"/Sector/", MD5(?activityname))) as ?URICommonActivities).
     }.
 
-    OPTIONAL {?procedure jarql:possibleSectors ?possiblesectors.
-              FILTER(STRLEN(?possiblesectors)!=0).
-              BIND(URI(CONCAT("https://cpsv.belgium.be/api/v1/Sector/", MD5(?possiblesectors))) as ?URIPossibleSectors).
+    OPTIONAL {
+    	?procedure jarql:possibleSectors ?possiblesectors.
+        FILTER(STRLEN(?possiblesectors)!=0).
+        BIND(URI(CONCAT(?URIBase,"/Sector/", MD5(?possiblesectors))) as ?URIPossibleSectors).
     }.
 
-    OPTIONAL {?procedure jarql:possibleActivities ?possibleactivities.
-              FILTER(STRLEN(?possibleactivities)!=0).
-              BIND(URI(CONCAT("https://cpsv.belgium.be/api/v1/Sector/", MD5(?possibleactivities))) as ?URIPossibleActivities).
+    OPTIONAL {
+    	?procedure jarql:possibleActivities ?possibleactivities.
+        FILTER(STRLEN(?possibleactivities)!=0).
+        BIND(URI(CONCAT(?URIBase,"/Sector/", MD5(?possibleactivities))) as ?URIPossibleActivities).
     }.
 
     {
         ?procedure jarql:responsibleAdministration ?responsibleadministration.
         ?responsibleadministration jarql:service ?administrationservice.
         ?administrationservice jarql:name ?administrationname.
-        BIND(URI(CONCAT("https://cpsv.belgium.be/api/v1/PublicOrganisation/", MD5(?administrationname))) as ?URIPublicOrganisation).
+        BIND(URI(CONCAT(?URIBase,"/PublicOrganisation/", MD5(?administrationname))) as ?URIPublicOrganisation).
     }
 
     UNION {
-
         ?procedure jarql:responsibleAdministration ?responsibleadministration.
         ?responsibleadministration jarql:administration ?administrationservice.
         ?administrationservice jarql:name ?administrationname.
-        BIND(URI(CONCAT("https://cpsv.belgium.be/api/v1/PublicOrganisation/", MD5(?administrationname))) as ?URIPublicOrganisation).
+        BIND(URI(CONCAT(?URIBase,"/PublicOrganisation/", MD5(?administrationname))) as ?URIPublicOrganisation).
     }.
 
-    OPTIONAL {?procedure jarql:responsibleAdministration ?responsibleadministration.
-              ?responsibleadministration jarql:address ?address.
-              ?address jarql:municipality ?addrmunicipality.
-              ?address jarql:postcode ?addrpostcode.
-              ?address jarql:box ?addrpoBox.
-              ?address jarql:addressId ?addraddressid.
-              ?addraddressid jarql:mainCode ?addraddressidmaincode.
-              ?addraddressid jarql:subCode ?addraddressidsubcode.
-              ?address jarql:number ?addrnumber.
-              ?address jarql:street ?addrstreet.
-              BIND(CONCAT(CONCAT(?addrstreet," "),?addrnumber) as ?fulladdress).
-              BIND(CONCAT(CONCAT(?addraddressidmaincode," "),?addraddressidsubcode) as ?addruniqueaddressid).
-              BIND(URI(CONCAT("https://cpsv.belgium.be/api/v1/Address/", MD5(?addraddressidmaincode))) as ?URIAddress).
+    OPTIONAL {
+    	?procedure jarql:responsibleAdministration ?responsibleadministration.
+        ?responsibleadministration jarql:address ?address.
+        ?address jarql:municipality ?addrmunicipality.
+        ?address jarql:postcode ?addrpostcode.
+        ?address jarql:box ?addrpoBox.
+        ?address jarql:addressId ?addraddressid.
+        ?addraddressid jarql:mainCode ?addraddressidmaincode.
+        ?addraddressid jarql:subCode ?addraddressidsubcode.
+        ?address jarql:number ?addrnumber.
+        ?address jarql:street ?addrstreet.
+        BIND(CONCAT(CONCAT(?addrstreet," "),?addrnumber) as ?fulladdress).
+        BIND(CONCAT(CONCAT(?addraddressidmaincode," "),?addraddressidsubcode) as ?addruniqueaddressid).
+        BIND(URI(CONCAT(?URIBase,"/Address/", MD5(?addraddressidmaincode))) as ?URIAddress).
     }.
 
-    OPTIONAL {?procedure jarql:responsibleAdministration ?responsibleadministration.
-              ?responsibleadministration jarql:type ?agenttype.
+    OPTIONAL {
+    	?procedure jarql:responsibleAdministration ?responsibleadministration.
+        ?responsibleadministration jarql:type ?agenttype.
     }.
     
-    OPTIONAL {?procedure jarql:legalBases ?legalbases.
-          ?legalbases jarql:fedict.edrl.domain.Link ?legalframework.
-          ?legalframework jarql:description ?frameworkdescription.
-          FILTER(STRLEN(?frameworkdescription)!=0).
-          BIND(REPLACE(REPLACE(?frameworkdescription,"<div>",""),"</div>","") as ?frameworkdescr).
-          BIND(SUBSTR(?frameworkdescr,1,25) as ?frameworktitle).
-          BIND(URI(CONCAT("https://cpsv.belgium.be/api/v1/FormalFramework/", MD5(?frameworkdescription))) as ?URIFormalFramework).
+    OPTIONAL {
+    	?procedure jarql:legalBases ?legalbases.
+        ?legalbases jarql:fedict.edrl.domain.Link ?legalframework.
+        ?legalframework jarql:description ?frameworkdescription.
+        FILTER(STRLEN(?frameworkdescription)!=0).
+        BIND(REPLACE(REPLACE(?frameworkdescription,"<div>",""),"</div>","") as ?frameworkdescr).
+        BIND(SUBSTR(?frameworkdescr,1,25) as ?frameworktitle).
+        BIND(URI(CONCAT(?URIBase,"/FormalFramework/", MD5(?frameworkdescription))) as ?URIFormalFramework).
     }.
 
-    OPTIONAL {?procedure jarql:additionalInformation ?additionalinformation.
-          ?additionalinformation jarql:fedict.edrl.domain.Link ?additionallegalframework.
-          ?additionallegalframework jarql:description ?additionalframeworkdescription.
-          FILTER(STRLEN(?additionalframeworkdescription)!=0).
-          BIND(REPLACE(REPLACE(?additionalframeworkdescription,"<div>",""),"</div>","") as ?additionalframeworkdescr).
-          BIND(SUBSTR(?additionalframeworkdescr,1,25) as ?additionalframeworktitle).
-          BIND(URI(CONCAT("https://cpsv.belgium.be/api/v1/FormalFramework/", MD5(?additionalframeworkdescription))) as ?URIAdditionalFormalFramework).
+    OPTIONAL {
+    	?procedure jarql:additionalInformation ?additionalinformation.
+        ?additionalinformation jarql:fedict.edrl.domain.Link ?additionallegalframework.
+        ?additionallegalframework jarql:description ?additionalframeworkdescription.
+        FILTER(STRLEN(?additionalframeworkdescription)!=0).
+        BIND(REPLACE(REPLACE(?additionalframeworkdescription,"<div>",""),"</div>","") as ?additionalframeworkdescr).
+        BIND(SUBSTR(?additionalframeworkdescr,1,25) as ?additionalframeworktitle).
+        BIND(URI(CONCAT(?URIBase,"/FormalFramework/", MD5(?additionalframeworkdescription))) as ?URIAdditionalFormalFramework).
     }.
     
-    OPTIONAL {?procedure jarql:introductionRequest ?introductionrequest.
-              ?introductionrequest jarql:service ?servicechannel.
-              ?servicechannel jarql:name ?servicechannelname.
-              BIND(URI(CONCAT("https://cpsv.belgium.be/api/v1/Channel/", MD5(?servicechannelname))) as ?URIChannel).
+    OPTIONAL {
+    	?procedure jarql:introductionRequest ?introductionrequest.
+        ?introductionrequest jarql:service ?servicechannel.
+        ?servicechannel jarql:name ?servicechannelname.
+        BIND(URI(CONCAT(?URIBase,"/Channel/", MD5(?servicechannelname))) as ?URIChannel).
     }.
 
-   OPTIONAL {?procedure jarql:conditions ?servicerequirements.
-              FILTER(STRLEN(?servicerequirements)!=0).
-              BIND(URI(CONCAT("https://cpsv.belgium.be/api/v1/Criterion/", MD5(?servicerequirements))) as ?URICriterion).
+   OPTIONAL {
+   		?procedure jarql:conditions ?servicerequirements.
+        FILTER(STRLEN(?servicerequirements)!=0).
+        BIND(URI(CONCAT(?URIBase,"/Criterion/", MD5(?servicerequirements))) as ?URICriterion).
     }.
 
-    OPTIONAL {?procedure jarql:price ?costtype.
-              FILTER(STRLEN(?costtype)!=0).
-              BIND(URI(CONCAT("https://cpsv.belgium.be/api/v1/Cost/", MD5(?costtype))) as ?URICost).
+    OPTIONAL {
+    	?procedure jarql:price ?costtype.
+        FILTER(STRLEN(?costtype)!=0).
+        BIND(URI(CONCAT(?URIBase,"/Cost/", MD5(?costtype))) as ?URICost).
     }.
 
-    OPTIONAL {?procedure jarql:authorizationPeriod ?authorizationperiod.
-              FILTER(STRLEN(?authorizationperiod)!=0).
-              BIND(REPLACE(REPLACE(?authorizationperiod,"<div>",""),"</div>","") AS ?outputtitle).
-              BIND(URI(CONCAT("https://cpsv.belgium.be/api/v1/Output/", MD5(?outputtitle))) as ?URIOutput).
+    OPTIONAL {
+    	?procedure jarql:authorizationPeriod ?authorizationperiod.
+        FILTER(STRLEN(?authorizationperiod)!=0).
+        BIND(REPLACE(REPLACE(?authorizationperiod,"<div>",""),"</div>","") AS ?outputtitle).
+        BIND(URI(CONCAT(?URIBase,"/Output/", MD5(?outputtitle))) as ?URIOutput).
     }.
     
-    OPTIONAL {?procedure jarql:forms ?forms.
-              ?forms jarql:name ?evidencetitle.
-              FILTER(STRLEN(?evidencetitle)!=0).
-              BIND(URI(CONCAT("https://cpsv.belgium.be/api/v1/Evidence/", MD5(?evidencetitle))) as ?URIEvidence).
+    OPTIONAL {
+    	?procedure jarql:forms ?forms.
+        ?forms jarql:name ?evidencetitle.
+        FILTER(STRLEN(?evidencetitle)!=0).
+        BIND(URI(CONCAT(?URIBase,"/Evidence/", MD5(?evidencetitle))) as ?URIEvidence).
     }.
     
-    OPTIONAL {?procedure jarql:responsibleAdministration ?responsibleadministration.
-              ?responsibleadministration jarql:address ?address.
-              ?address jarql:email ?addremail.
-              ?address jarql:telephone ?addrtelephone.
-              ?address jarql:website ?addrwebsite.
-              BIND(URI(IF(STRSTARTS(?addrwebsite, "http://"),?addrwebsite,IF(STRLEN(?addrwebsite)=0,CONCAT("http://",MD5(CONCAT(?addremail,?addrtelephone))),CONCAT("http://",?addrwebsite)))) as ?URIContactPoint).
+    OPTIONAL {
+    	?procedure jarql:responsibleAdministration ?responsibleadministration.
+        ?responsibleadministration jarql:address ?address.
+        ?address jarql:email ?addremail.
+        ?address jarql:telephone ?addrtelephone.
+        ?address jarql:website ?addrwebsite.
+        BIND(URI(IF(STRSTARTS(?addrwebsite, "http://"),?addrwebsite,IF(STRLEN(?addrwebsite)=0,CONCAT("http://",MD5(CONCAT(?addremail,?addrtelephone))),CONCAT("http://",?addrwebsite)))) as ?URIContactPoint).
     }.
     
-    OPTIONAL {?procedure jarql:indicators ?indicators.
-              ?indicators jarql:countryPart ?countryPart.
-              ?countryPart jarql:dutch ?dutchvalue.
-              ?countryPart jarql:german ?germanvalue.
-              ?countryPart jarql:brussels ?brusselsvalue.
-              ?countryPart jarql:french ?frenchvalue.
-              BIND(IF(xsd:boolean(?dutchvalue),URI("https://cpsv.belgium.be/api/v1/ServiceSpatial/dutch"),"") as ?dutchregion).
-              BIND(IF(xsd:boolean(?germanvalue),URI("https://cpsv.belgium.be/api/v1/ServiceSpatial/german"),"") as ?germanregion).
-              BIND(IF(xsd:boolean(?brusselsvalue),URI("https://cpsv.belgium.be/api/v1/ServiceSpatial/brussels"),"") as ?brusselsregion).
-              BIND(IF(xsd:boolean(?frenchvalue),URI("https://cpsv.belgium.be/api/v1/ServiceSpatial/french"),"") as ?frenchregion).
+    OPTIONAL {
+    	?procedure jarql:indicators ?indicators.
+        ?indicators jarql:countryPart ?countryPart.
+        ?countryPart jarql:dutch ?dutchvalue.
+        ?countryPart jarql:german ?germanvalue.
+        ?countryPart jarql:brussels ?brusselsvalue.
+        ?countryPart jarql:french ?frenchvalue.
+        BIND(IF(xsd:boolean(?dutchvalue),URI(?URIBase,"/ServiceSpatial/dutch"),"") as ?dutchregion).
+        BIND(IF(xsd:boolean(?germanvalue),URI(?URIBase,"/ServiceSpatial/german"),"") as ?germanregion).
+        BIND(IF(xsd:boolean(?brusselsvalue),URI(?URIBase,"/ServiceSpatial/brussels"),"") as ?brusselsregion).
+        BIND(IF(xsd:boolean(?frenchvalue),URI(?URIBase,"/ServiceSpatial/french"),"") as ?frenchregion).
     }.
     
-    OPTIONAL {?procedure jarql:responsibleAdministration ?responsibleadministration.
-              ?responsibleadministration jarql:municipalities ?municipalities.
-              ?municipalities jarql:fedict.edrl.domain.Municipality ?municipality.
-              ?municipality jarql:postCode ?postcode.
-              BIND(URI(CONCAT("https://cpsv.belgium.be/api/v1/PublicOrganisationSpatial/", ?postcode)) as ?URIPublicOrganisationSpatial).
+    OPTIONAL {
+    	?procedure jarql:responsibleAdministration ?responsibleadministration.
+        ?responsibleadministration jarql:municipalities ?municipalities.
+        ?municipalities jarql:fedict.edrl.domain.Municipality ?municipality.
+        ?municipality jarql:postCode ?postcode.
+       	BIND(URI(CONCAT(?URIBase,"/PublicOrganisationSpatial/", ?postcode)) as ?URIPublicOrganisationSpatial).
     }.
 }
