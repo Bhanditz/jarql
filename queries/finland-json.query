@@ -35,6 +35,9 @@ CONSTRUCT {
     ?URIAgent a dct:Agent;
         dct:title ?organizationname2.
 
+    ?URIAgent2 a dct:Agent;
+        dct:title ?organizationname3.
+        
     ?URIFormalFramework a cpsv:FormalFramework;
         dct:title ?legislationname.
 
@@ -55,21 +58,21 @@ WHERE {
 
     OPTIONAL {
     	jarql:root jarql:fundingType ?costtype.
-        BIND(URI(CONCAT(?URIBase,"/Cost/", ?costtype)) as ?URICost).
     }.
+    BIND(URI(CONCAT(?URIBase,"/Cost/", ?costtype)) as ?URICost).
 
     OPTIONAL {
     	jarql:root jarql:areas ?areas.
         ?areas jarql:municipalities ?municipalities.
         ?municipalities jarql:code ?municipalitiescode.
-        BIND(URI(CONCAT(?URIBase,"/Spatial/", ?municipalitiescode)) as ?URIServiceSpatial).
     }.
+    BIND(URI(CONCAT(?URIBase,"/Spatial/", ?municipalitiescode)) as ?URIServiceSpatial).
 
     OPTIONAL {
     	jarql:root jarql:serviceClasses ?serviceclasses.
         ?serviceclasses jarql:uri ?serviceuritype.
-        BIND(URI(?serviceuritype) AS ?serviceuri).
     }.
+    BIND(URI(?serviceuritype) AS ?serviceuri).
 
     jarql:root jarql:serviceNames ?servicenames.
     ?servicenames jarql:value ?servicenamevalue.
@@ -87,13 +90,13 @@ WHERE {
     	jarql:root jarql:requirements ?servicerequirements.
         ?servicerequirements jarql:value ?requirementvalue.
         FILTER(STRLEN(?requirementvalue)!=0).
-        BIND(URI(CONCAT(?URIBase,"/Criterion/", MD5(?requirementvalue))) as ?URICriterion).
     }.
+    BIND(URI(CONCAT(?URIBase,"/Criterion/", MD5(?requirementvalue))) as ?URICriterion).
 
     OPTIONAL {
     	jarql:root jarql:industrialClasses ?industrialclasses.
-        BIND(URI(CONCAT(?URIBase,"/Sector/", MD5(?industrialclasses))) as ?URISector).
     }.
+    BIND(URI(CONCAT(?URIBase,"/Sector/", MD5(?industrialclasses))) as ?URISector).
 
     OPTIONAL {
     	jarql:root jarql:languages ?languages.
@@ -101,8 +104,8 @@ WHERE {
 
     OPTIONAL {
     	jarql:root jarql:lifeEvents ?lifeevents.
-        BIND(URI(CONCAT(?URIBase,"/LifeEvent/", MD5(?lifeevents))) as ?URILifeEvent).
     }.
+    BIND(URI(CONCAT(?URIBase,"/LifeEvent/", MD5(?lifeevents))) as ?URILifeEvent).
 
     OPTIONAL {
     	jarql:root jarql:keywords ?keywords.
@@ -124,31 +127,31 @@ WHERE {
         ?organizations2 jarql:organization ?organizationstructure2.
         ?organizationstructure2 jarql:name ?organizationname2.
         ?organizationstructure2 jarql:id ?organizationid2.
-        BIND(URI(CONCAT(?URIBase,"/Agent/", ?organizationid2)) as ?URIAgent).
     }.
+    BIND(URI(CONCAT(?URIBase,"/Agent/", ?organizationid2)) as ?URIAgent).
 
     OPTIONAL {
     	jarql:root jarql:organizations ?organizations2.
         ?organizations2 jarql:roleType ?organizationrole2.
         FILTER (?organizationrole2!="Responsible"^^xsd:string).
         ?organizations2 jarql:additionalInformation ?additionalinformation.
-        ?additionalinformation jarql:value ?organizationname2.
-        BIND(URI(CONCAT(?URIBase,"/Agent/", MD5(?organizationname2))) as ?URIAgent).
+        ?additionalinformation jarql:value ?organizationname3.
     }.
+    BIND(URI(CONCAT(?URIBase,"/Agent/", MD5(?organizationname3))) as ?URIAgent2).
 
     OPTIONAL {
     	jarql:root jarql:legislation ?legislation.
         ?legislation jarql:names ?names.
         ?names jarql:value ?legislationname.
-        BIND(URI(CONCAT(?URIBase,"/FormalFramework/", MD5(?legislationname))) as ?URIFormalFramework).
     }.
+    BIND(URI(CONCAT(?URIBase,"/FormalFramework/", MD5(?legislationname))) as ?URIFormalFramework).
 
     OPTIONAL {
     	jarql:root jarql:serviceChannels ?servicechannels.
         ?servicechannels jarql:serviceChannel ?servicechannel.
         ?servicechannel jarql:id ?servicechannelid.
         ?servicechannel jarql:name ?servicechannelname.
-        BIND(URI(CONCAT(?URIBase,"/Channel/", ?servicechannelid)) as ?URIChannel).
     }.
+    BIND(URI(CONCAT(?URIBase,"/Channel/", ?servicechannelid)) as ?URIChannel).
 
 }
