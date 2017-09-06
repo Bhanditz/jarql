@@ -1,10 +1,13 @@
 prefix adms: <http://www.w3.org/ns/adms#>
 prefix cpsv: <http://purl.org/vocab/cpsv#>
 prefix cv: <http://data.europa.eu/m8g/>
+prefix dcat: <http://www.w3.org/ns/dcat#>
 prefix dct: <http://purl.org/dc/terms/>
 prefix jarql: <http://jarql.com/>
+prefix locn: <http://www.w3.org/ns/locn#>
 prefix schema: <https://schema.org/>
 prefix skos: <http://www.w3.org/2004/02/skos/core#>
+prefix xsd: <http://www.w3.org/2001/XMLSchema#>
 
 CONSTRUCT {
     ?URIService a cpsv:PublicService;
@@ -91,65 +94,73 @@ WHERE {
     OPTIONAL {
         ?fiche0 jarql:conditions ?conditions.
         FILTER(STRLEN(?conditions)!=0).
-        BIND(URI(CONCAT(?URIBase,"/Criterion/", MD5(?conditions))) as ?URICriterion).
     }.
+    BIND(URI(CONCAT(?URIBase,"/Criterion/", MD5(?conditions))) as ?URICriterion).
 
     OPTIONAL {
         ?fiche0 jarql:procedure ?ruledescription.
         FILTER(STRLEN(?ruledescription)!=0).
         BIND(SUBSTR(?ruledescription,1,25) as ?ruletitle).
-        BIND(URI(CONCAT(?URIBase,"/Rule/", MD5(?ruledescription))) as ?URIRule).
     }.
+    BIND(URI(CONCAT(?URIBase,"/Rule/", MD5(?ruledescription))) as ?URIRule).
 
     OPTIONAL {
         ?fiche0 jarql:legal_references ?legal_references.
         ?legal_references jarql:id ?formalframeworkid.
         ?legal_references jarql:name ?formalframeworkname.
-        BIND(URI(CONCAT(?URIBase,"/2.0/FormalFramework/", ?formalframeworkid)) as ?URIFormalFramework).
     }.
-
+    BIND(URI(CONCAT(?URIBase,"/FormalFramework/", ?formalframeworkid)) as ?URIFormalFramework).
+ 
     OPTIONAL {
         ?fiche0 jarql:stakeholders ?stakeholders.
         ?stakeholders jarql:id ?contactpointid.
+    }.
+    BIND(URI(CONCAT(?URIBase,"/ContactPoint/", ?contactpointid)) as ?URIContactPoint).
+    
+    OPTIONAL {
+        ?fiche0 jarql:stakeholders ?stakeholders.
         ?stakeholders jarql:email ?contactpointemail.
+    }.
+    
+    OPTIONAL {
+        ?fiche0 jarql:stakeholders ?stakeholders.
         ?stakeholders jarql:phone ?contactpointphone.
-        BIND(URI(CONCAT(?URIBase,"/ContactPoint/", ?contactpointid)) as ?URIContactPoint).
     }.
 
     OPTIONAL {
         ?fiche0 jarql:points_of_contact ?points_of_contact.
         ?points_of_contact jarql:id ?points_of_contact_id.
-        BIND(URI(CONCAT(?URIBase,"/Channel/", ?points_of_contact_id)) as ?URIChannel).
     }.
+    BIND(URI(CONCAT(?URIBase,"/Channel/", ?points_of_contact_id)) as ?URIChannel).
 
     OPTIONAL {
         ?fiche0 jarql:administrations ?administrations.
         ?administrations jarql:id ?administrationid.
-        ?administrations jarql:name ?administrationname.
-        BIND(URI(CONCAT(?URIBase,"/PublicOrganisation/", ?administrationid)) as ?URIPublicOrganisation).
+        ?administrations jarql:title ?administrationname.
     }.
+    BIND(URI(CONCAT(?URIBase,"/PublicOrganisation/", ?administrationid)) as ?URIPublicOrganisation).
 
     OPTIONAL {
         ?fiche0 jarql:forms ?forms.
         ?forms jarql:id ?formid.
         ?forms jarql:title ?formtitle.
         ?forms jarql:language ?formlanguage.
-        BIND(URI(CONCAT(?URIBase,"/Evidence/", ?formid)) as ?URIEvidence).
     }.
+    BIND(URI(CONCAT(?URIBase,"/Evidence/", ?formid)) as ?URIEvidence).
 
     OPTIONAL {
         ?fiche0 jarql:categories ?categories.
         ?categories jarql:id ?categoryid.
         ?categories jarql:title ?categorytitle.
-        BIND(URI(CONCAT(?URIBase,"/Sector/", ?categoryid)) as ?URISector).
     }.
+    BIND(URI(CONCAT(?URIBase,"/Sector/", ?categoryid)) as ?URISector).
 
     OPTIONAL {
         ?fiche0 jarql:events ?events.
         ?events jarql:id ?eventid.
         ?events jarql:title ?eventtitle.
-        BIND(URI(CONCAT(?URIBase,"/Event/", ?eventid)) as ?URIEvent).
     }.
+    BIND(URI(CONCAT(?URIBase,"/Event/", ?eventid)) as ?URIEvent).
 
     OPTIONAL {
         ?fiche0 jarql:when ?status.
